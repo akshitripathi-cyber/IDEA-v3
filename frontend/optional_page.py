@@ -134,14 +134,14 @@ class OptionalPage:
         self.saved_filters_btn.pack(side="left")
 
         # Dropdown
-        self.saved_filters_frame = ctk.CTkFrame(
+        self.saved_filters_frame = ctk.CTkScrollableFrame(
             right_panel,
-            width=350,
-            height=200,
+            width=280,
+            height=180,
             fg_color="#FFFFFF",
             corner_radius=16,
             border_width=1,
-            border_color="#E5E7EB"
+            border_color="#E5E7EB",
         )
         self.saved_filters_frame.place_forget()
 
@@ -3932,9 +3932,9 @@ class OptionalPage:
             apply_btn = ctk.CTkButton(
                 row,
                 text="✔",
-                width=28,
-                height=28,
-                corner_radius=8,
+                width=20,
+                height=20,
+                corner_radius=10,
                 fg_color="#22C55E",
                 hover_color="#16A34A"
             )
@@ -3948,9 +3948,9 @@ class OptionalPage:
             delete_btn = ctk.CTkButton(
                 row,
                 text="✕",
-                width=28,
-                height=28,
-                corner_radius=8,
+                width=20,
+                height=20,
+                corner_radius=10,
                 fg_color="#989292",
                 hover_color="#898584"
             )
