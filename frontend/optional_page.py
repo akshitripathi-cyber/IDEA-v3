@@ -40,6 +40,7 @@ class OptionalPage:
         self.form_data = form_data or {}
         self.optional_data = optional_data or {}
         self.is_exporting = False
+        self.dropdown_height = 200  # Initial height for saved filters dropdown
         # self._sanitize_optional_data()
 
         # Appearance
@@ -133,9 +134,18 @@ class OptionalPage:
         )
         self.saved_filters_btn.pack(side="left")
 
-        # Dropdown
+        # Dropdown - create a wrapper frame for positioning
+        self.saved_filters_wrapper = ctk.CTkFrame(
+            right_panel, 
+            fg_color="transparent",
+            width=280,
+            height=180
+        )
+        self.saved_filters_wrapper.place_forget()
+
+        # Scrollable frame inside wrapper
         self.saved_filters_frame = ctk.CTkScrollableFrame(
-            right_panel,
+            self.saved_filters_wrapper,
             width=280,
             height=180,
             fg_color="#FFFFFF",
@@ -143,7 +153,7 @@ class OptionalPage:
             border_width=1,
             border_color="#E5E7EB",
         )
-        self.saved_filters_frame.place_forget()
+        self.saved_filters_frame.pack(fill="both", expand=True)
 
         # ================= BODY (FIXED) =================
         body_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
@@ -3897,6 +3907,7 @@ class OptionalPage:
         prefs = load_preferences()
 
         if not prefs:
+
             empty_label = ctk.CTkLabel(
                 self.saved_filters_frame,
                 text="No saved filters",
@@ -3906,6 +3917,8 @@ class OptionalPage:
             empty_label.pack(pady=40, padx=20)
             # Force update to ensure label is visible
             self.saved_filters_frame.update_idletasks()
+            self.dropdown_height = 80
+            self.saved_filters_wrapper.configure(height=self.dropdown_height)
             return
 
         for name, data in prefs.items():
@@ -3960,7 +3973,9 @@ class OptionalPage:
                 command=lambda n=name: self.delete_saved_filter(n)
             )
 
-
+        # Set dynamic height based on number of preferences
+        self.dropdown_height = min(200, len(prefs) * 70 + 20)
+        self.saved_filters_wrapper.configure(height=self.dropdown_height)
 
     def load_pref_into_form(self, data):
 
@@ -4037,25 +4052,24 @@ class OptionalPage:
     def toggle_saved_filters(self):
         self.master.update_idletasks()
 
-        if self.saved_filters_frame.winfo_ismapped():
-            self.saved_filters_frame.place_forget()
+        if self.saved_filters_wrapper.winfo_ismapped():
+            self.saved_filters_wrapper.place_forget()
         else:
-            # Render preferences first to populate the dropdown
-            self.render_saved_preferences()
-            self.saved_filters_frame.update_idletasks()
-            
             # Get button position (relative inside parent)
             btn_y = self.saved_filters_btn.winfo_y()
             btn_height = self.saved_filters_btn.winfo_height()
 
-            # Place dropdown aligned to RIGHT side of parent
-            self.saved_filters_frame.place(
+            # Place wrapper (not scrollable frame directly)
+            self.saved_filters_wrapper.place(
                 relx=0.98,  # slight margin from right edge
                 y=btn_y + btn_height + 5,
-                anchor="ne"  # ⭐ THIS IS THE KEY FIX
+                anchor="ne"
             )
 
-            self.saved_filters_frame.lift()  # bring to front
+            # Now render preferences AFTER placement
+            self.render_saved_preferences()
+            self.saved_filters_wrapper.update_idletasks()
+            self.saved_filters_wrapper.lift()  # bring to front
 
 
 
@@ -4097,7 +4111,7 @@ class OptionalPage:
             for field, desc in self.fields:
                 self.add_card(field, desc)
 
-            self.saved_filters_frame.place_forget()
+            self.saved_filters_wrapper.place_forget()
 
         except Exception as e:
             print("Apply filter error:", e)
@@ -4105,14 +4119,14 @@ class OptionalPage:
 
 
     def _close_dropdown_on_click(self, event):
-        if self.saved_filters_frame.winfo_ismapped():
-            x1 = self.saved_filters_frame.winfo_rootx()
-            y1 = self.saved_filters_frame.winfo_rooty()
-            x2 = x1 + self.saved_filters_frame.winfo_width()
-            y2 = y1 + self.saved_filters_frame.winfo_height()
+        if self.saved_filters_wrapper.winfo_ismapped():
+            x1 = self.saved_filters_wrapper.winfo_rootx()
+            y1 = self.saved_filters_wrapper.winfo_rooty()
+            x2 = x1 + self.saved_filters_wrapper.winfo_width()
+            y2 = y1 + self.saved_filters_wrapper.winfo_height()
 
             if not (x1 <= event.x_root <= x2 and y1 <= event.y_root <= y2):
-                self.saved_filters_frame.place_forget()
+                self.saved_filters_wrapper.place_forget()
 
 
 
